@@ -93,7 +93,7 @@ public class PuzzleCellHistoryCache {
         }
         userIterationCount = 0;
         userSelectedVersion = version;
-        System.out.println("version: " + version + ", saveCount: " + count);
+        LOGGER.debug("version: " + version + ", saveCount: " + count);
     }
 
     private static List<Integer> getVersion(PuzzleCell puzzleCell, long versionNumber) {
@@ -114,12 +114,12 @@ public class PuzzleCellHistoryCache {
             saveVersion(clist);
         }
 
-        if (userSelectedVersion <= 1)
+        if (userSelectedVersion < 1)
             return;
 
         userIterationCount++;
         userSelectedVersion--;
-        System.out.println("selectPreviousVersion.userSelectedVersion: " + userSelectedVersion);
+        LOGGER.debug("selectPreviousVersion.userSelectedVersion: " + userSelectedVersion);
         for (PuzzleCell puzzleCell : clist) {
             puzzleCell.loadVersion(getVersion(puzzleCell, userSelectedVersion));
         }
@@ -130,7 +130,7 @@ public class PuzzleCellHistoryCache {
             return;
         userIterationCount++;
         userSelectedVersion++;
-        System.out.println("selectNextVersion.userSelectedVersion: " + userSelectedVersion);
+        LOGGER.debug("selectNextVersion.userSelectedVersion: " + userSelectedVersion);
         for (PuzzleCell puzzleCell : clist) {
             puzzleCell.loadVersion(getVersion(puzzleCell, userSelectedVersion));
         }
@@ -141,6 +141,6 @@ public class PuzzleCellHistoryCache {
     }
 
     public static long getCurrentVersion() {
-        return userSelectedVersion;
+        return version;
     }
 }

@@ -71,15 +71,11 @@ public class PuzzleCellGroup {
         return satisfied;
     }
 
-    void debug(String str) {
-        System.out.println(str);
-    }
-
     void debug(String str, List<PuzzleCell> puzzleCells) {
         if (puzzleCells == null) return;
-        debug(str);
+        LOGGER.debug(str);
         for (PuzzleCell c : puzzleCells) {
-            debug("   " + c.toString());
+            LOGGER.debug("   " + c.toString());
         }
     }
 
@@ -112,7 +108,7 @@ public class PuzzleCellGroup {
         }
 
         for (int n = 2; n < indexToCell.size(); n++) {
-            debug("n = " + n);
+            LOGGER.debug("n = " + n);
             List<PuzzleCell> havingNitem = getItemsThatHasNItem(n);
             List<List<PuzzleCell>> equals = null;
 

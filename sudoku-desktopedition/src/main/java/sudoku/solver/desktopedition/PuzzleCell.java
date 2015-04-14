@@ -31,7 +31,7 @@ public class PuzzleCell {
 
         rowIndex = index / cellGoupCount;
         columnIndex = index % cellGoupCount;
-        squareIndex = ((int) (rowIndex / sudokuSize)) * 3 + (int) (columnIndex / sudokuSize);
+        squareIndex = ((int) (rowIndex / sudokuSize)) * sudokuSize + (int) (columnIndex / sudokuSize);
 
         values = new HashSet<Integer>();
 

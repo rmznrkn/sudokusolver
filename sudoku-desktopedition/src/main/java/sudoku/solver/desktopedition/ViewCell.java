@@ -3,254 +3,121 @@ package sudoku.solver.desktopedition;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ViewCell {
     private static final Logger LOGGER = Logger.getLogger(ViewCell.class);
-    private PuzzleCell puzzleCell;
-    private Point p1, p2, p3, p4, sP, pCenter;
-    private Rectangle rectangle;
-    private int with, height;
-    private boolean deleted;
-    private Color c;
-    private Rectangle CenterRec;
-    private Rectangle r1, r2, r3, r4;
+    private final PuzzleCell puzzleCell;
+    private final Rectangle cellRectangle;
+    private final Map<Integer, Rectangle> valueToRectangle;
+    private final Map<Integer, Rectangle> singleValueToRectangle;
+    private Color lineColor;
+    private Color fillColor;
+    private Color textColorSingleValue;
+    private Color textColorMultiValue;
+    private String textFont;
+    private int lineSize;
+    private Font multiValueFont;
+    private Font singleValueFont;
 
-    public ViewCell() {
-        deleted = false;
-    }
 
-    public ViewCell(int x, int y, int w, int h) {
-        deleted = false;
-        rectangle = new Rectangle(x, y, w, h);
-        with = w;
-        height = h;
-        sP = new Point(x, y);
-        p1 = new Point(x + w / 2, y);
-        p2 = new Point(x + w, y + h / 2);
-        p3 = new Point(x + w / 2, y + h);
-        p4 = new Point(x, y + h / 2);
-        pCenter = new Point(x + w / 2, y + h / 2);
-    }
-
-    public PuzzleCell getPuzzleCell() {
-        return puzzleCell;
-    }
-
-    public void setPuzzleCell(PuzzleCell puzzleCell) {
+    public ViewCell(PuzzleCell puzzleCell,
+                    int x, int y, int w, int h,
+                    Color lineColor, int lineSize,
+                    Color fillColor, Color textColorSingleValue,
+                    Color textColorMultiValue,
+                    String textFont,
+                    Graphics graphics) {
         this.puzzleCell = puzzleCell;
+        cellRectangle = new Rectangle(x, y, w, h);
+        this.lineColor = lineColor;
+        this.fillColor = fillColor;
+        this.textColorSingleValue = textColorSingleValue;
+        this.textColorMultiValue = textColorMultiValue;
+        this.textFont = textFont;
+        this.lineSize = lineSize;
+
+        if(this.puzzleCell == null) {
+            valueToRectangle = null;
+            singleValueToRectangle = null;
+            return;
+        }
+
+        valueToRectangle = new HashMap<Integer, Rectangle>();
+        singleValueToRectangle = new HashMap<Integer, Rectangle>();
+
+        int size = (w > h) ? h : w;
+        singleValueFont = new Font(textFont, Font.CENTER_BASELINE, size-2);
+
+        w = cellRectangle.width / puzzleCell.getSudokuSize();
+        h = cellRectangle.height / puzzleCell.getSudokuSize();
+
+        size = (w > h) ? h : w;
+        multiValueFont = new Font(textFont, Font.CENTER_BASELINE, size-2);
+
+        Font holdFont = graphics.getFont();
+
+        for (int i = 0; i  < puzzleCell.getSudokuSize() * puzzleCell.getSudokuSize(); i++) {
+            String strValue = String.format("%d",i+1);
+
+            graphics.setFont(singleValueFont);
+            FontMetrics fm = graphics.getFontMetrics();
+
+            x = cellRectangle.x + (cellRectangle.width - fm.stringWidth(strValue)) / 2;
+            y = cellRectangle.y + (fm.getAscent() + (cellRectangle.height - (fm.getAscent() + fm.getDescent())) / 2);
+
+            singleValueToRectangle.put(i+1, new Rectangle(x, y, cellRectangle.width, cellRectangle.height));
+
+            graphics.setFont(multiValueFont);
+            fm = graphics.getFontMetrics();
+
+            x = cellRectangle.x + ((int) i % puzzleCell.getSudokuSize()) * w;
+            y = cellRectangle.y + ((int) i / puzzleCell.getSudokuSize()) * h;
+
+            x = x + (w - fm.stringWidth(String.format("%d",i+1))) / 2;
+            y = y + (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
+
+            valueToRectangle.put(i+1,  new Rectangle(x, y, w, h));
+        }
+
+        graphics.setFont(holdFont);
     }
 
-    public Point getsP() {
-        return sP;
+    public void paint(Graphics g) {
+
+        Graphics2D g2 = (Graphics2D) g;
+
+        if (puzzleCell != null){
+            g.setColor(fillColor);
+            g2.fillRect(cellRectangle.x, cellRectangle.y, cellRectangle.width, cellRectangle.height);
+        }
+
+        g2.setStroke(new BasicStroke(lineSize));
+        g.setColor(lineColor);
+        g.drawRect(cellRectangle.x, cellRectangle.y, cellRectangle.width, cellRectangle.height);
+
+        if(puzzleCell == null)
+            return;
+
+        Integer vlist[] = puzzleCell.getValueList();
+
+        if(vlist == null)
+            return;
+
+        if (vlist.length == 1) {
+            Integer v = puzzleCell.getValue();
+            paintText(g, v.toString(), singleValueToRectangle.get(v), singleValueFont, textColorSingleValue);
+        } else {
+            for (Integer v : vlist) {
+                paintText(g, v.toString(), valueToRectangle.get(v), multiValueFont,  textColorMultiValue);
+            }
+        }
     }
 
-    public void setsP(Point sP) {
-        this.sP = sP;
-    }
-
-    public Point getpCenter() {
-        return pCenter;
-    }
-
-    public void setpCenter(Point pCenter) {
-        this.pCenter = pCenter;
-    }
-
-    public int getWith() {
-        return with;
-    }
-
-    public void setWith(int with) {
-        this.with = with;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public Color getC() {
-        return c;
-    }
-
-    public void setC(Color c) {
-        this.c = c;
-    }
-
-    public Rectangle getCenterRec() {
-        return CenterRec;
-    }
-
-    public void setCenterRec(Rectangle CenterRec) {
-        this.CenterRec = CenterRec;
-    }
-
-    public Point getPCent() {
-        return pCenter;
-    }
-
-    public void setPCent(Point p) {
-        pCenter = p;
-    }
-
-    public Point getP1() {
-        return p1;
-    }
-
-    public void setP1(Point p) {
-        p1 = p;
-    }
-
-    public Point getP2() {
-        return p2;
-    }
-
-    public void setP2(Point p) {
-        p2 = p;
-    }
-
-    public Point getP3() {
-        return p3;
-    }
-
-    public void setP3(Point p) {
-        p3 = p;
-    }
-
-    public Point getP4() {
-        return p4;
-    }
-
-    public void setP4(Point p) {
-        p4 = p;
-    }
-
-    public Point getSP() {
-        return sP;
-    }
-
-    public void setSP(Point p) {
-        sP = p;
-    }
-
-    public Color getClr() {
-        return c;
-    }
-
-    public void setClr(Color c1) {
-        c = c1;
-    }
-
-    public Rectangle getCr() {
-        return CenterRec;
-    }
-
-    public Rectangle getR1() {
-        return r1;
-    }
-
-    public Rectangle getR2() {
-        return r2;
-    }
-
-    public Rectangle getR3() {
-        return r3;
-    }
-
-    public Rectangle getR4() {
-        return r4;
-    }
-
-    public Rectangle getRectangle() {
-        return rectangle;
-    }
-
-    public void setRectangle(int x, int y, int w, int h) {
-        rectangle = new Rectangle(x, y, w, h);
-        with = w;
-        height = h;
-        sP = new Point(x, y);
-        p1 = new Point(x + w / 2, y);
-        p2 = new Point(x + w, y + h / 2);
-        p3 = new Point(x + w / 2, y + h);
-        p4 = new Point(x, y + h / 2);
-        pCenter = new Point(x + w / 2, y + h / 2);
-    }
-
-    public boolean isDel() {
-        return deleted;
-    }
-
-    public void setPoints(int x, int y)//start points
-    {
-        setSP(new Point(x, y));
-        setP1(new Point(x + with / 2, y));
-        setP2(new Point(x + with, y + height / 2));
-        setP3(new Point(x + with / 2, y + height));
-        setP4(new Point(x, y + height / 2));
-        setPCent(new Point(x + with / 2, y + height / 2));
-    }
-
-    public void setSize(int w, int h)//start points
-    {
-        with = w;
-        height = h;
-        setPoints(sP.x, sP.y);
-    }
-
-    public void delete() {
-        deleted = true;
-    }
-
-    public void createRecs() {
-        CenterRec = new Rectangle(pCenter.x - 2, pCenter.y - 2, 5, 5);
-        r1 = new Rectangle(p1.x - 2, p1.y - 2, 5, 5);
-        r2 = new Rectangle(p2.x - 2, p2.y - 2, 5, 5);
-        r3 = new Rectangle(p3.x - 2, p3.y - 2, 5, 5);
-        r4 = new Rectangle(p4.x - 2, p4.y - 2, 5, 5);
-        rectangle = new Rectangle(sP.x, sP.y, with, height);
-    }
-
-    public int getW() {
-        return with;
-    }
-
-    public int getH() {
-        return height;
-    }
-
-    public boolean isContains(Point p) {
-        return rectangle.contains(p);
-    }
-
-    public boolean isCRec(Point p) {
-        return CenterRec.contains(p);
-    }
-
-    public boolean isR1Con(Point p) {
-        return r1.contains(p);
-    }
-
-    public boolean isR2Con(Point p) {
-        return r2.contains(p);
-    }
-
-    public boolean isR3Con(Point p) {
-        return r3.contains(p);
-    }
-
-    public boolean isR4Con(Point p) {
-        return r4.contains(p);
+    private void paintText(Graphics g, String text, Rectangle r, Font font,  Color textColor) {
+        g.setFont(font);
+        g.setColor(textColor);
+        g.drawString(text, r.x, r.y);
     }
 }

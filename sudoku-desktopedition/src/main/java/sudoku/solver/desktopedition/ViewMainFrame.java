@@ -65,9 +65,9 @@ public class ViewMainFrame extends JFrame {
 
         numberBar.setMaximumSize(drawingPanel.getSize());
 
-        int cellWith = 70;
-        int cellHeight = 70;
-        int border = 5;
+        int cellWith = 50;
+        int cellHeight = 50;
+        int border = 10;
 
         drawingPanel.setPreferredSize(new Dimension(size * size * cellWith + border * 2, size * size * cellHeight + border * 2));
         drawingPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -88,7 +88,7 @@ public class ViewMainFrame extends JFrame {
         drawingPanel.setCellWith(cellWith);
         drawingPanel.setCellHeight(cellHeight);
         drawingPanel.setMapTopX(border);
-        drawingPanel.setMapTopX(border);
+        drawingPanel.setMapTopY(border);
 
         drawingPanel.createSudoku();
 

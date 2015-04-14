@@ -41,7 +41,6 @@ public class ViewStartup extends javax.swing.JFrame {
         });
     }
 
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jComboBox1 = new javax.swing.JComboBox();
@@ -49,7 +48,7 @@ public class ViewStartup extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"3", "4", "5", "6"}));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"0", "1", "2","3", "4", "5", "6", "7"}));
         jComboBox1.setName("cmbSize"); // NOI18N
 
         jButton1.setText("Start");
