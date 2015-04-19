@@ -2,16 +2,19 @@ package sudoku.solver.desktopedition;
 
 import org.apache.log4j.Logger;
 
+import java.awt.*;
+import java.io.Serializable;
 import java.util.*;
+import java.util.List;
 
 /**
  * @author ramazan
  */
-public class PuzzleCellGroup {
+public class PuzzleCellGroup implements Serializable {
     private static final Logger LOGGER = Logger.getLogger(PuzzleCellGroup.class);
     private final Map<Integer, PuzzleCell> indexToCell;
     private final Map<Integer, Set<PuzzleCell>> valueToCell;
-
+    private boolean selected = false;
     public PuzzleCellGroup(int valueCount) {
         indexToCell = new HashMap<Integer, PuzzleCell>();
         valueToCell = new HashMap<Integer, Set<PuzzleCell>>();
@@ -71,12 +74,26 @@ public class PuzzleCellGroup {
         return satisfied;
     }
 
-    void debug(String str, List<PuzzleCell> puzzleCells) {
-        if (puzzleCells == null) return;
-        LOGGER.debug(str);
-        for (PuzzleCell c : puzzleCells) {
-            LOGGER.debug("   " + c.toString());
+    public boolean removeAssignedCell(int value) {
+        for (Integer key : indexToCell.keySet()) {
+            PuzzleCell cell = indexToCell.get(key);
+            if(cell.getValue() == value) {
+                LOGGER.debug(cell);
+                cell.assignAll(cell, value);
+                cell.fillAllValues();
+                LOGGER.debug(cell);
+                return true;
+            }
         }
+        return false;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public boolean isSelected(){
+        return selected;
     }
 
     public boolean simplify() {
@@ -108,13 +125,10 @@ public class PuzzleCellGroup {
         }
 
         for (int n = 2; n < indexToCell.size(); n++) {
-            LOGGER.debug("n = " + n);
             List<PuzzleCell> havingNitem = getItemsThatHasNItem(n);
             List<List<PuzzleCell>> equals = null;
 
             while (havingNitem != null) {
-
-                debug("havingNitem=", havingNitem);
 
                 PuzzleCell firstPuzzleCell = havingNitem.get(0);
 
@@ -125,7 +139,8 @@ public class PuzzleCellGroup {
                     break;
                 }
 
-                debug("equalList=", equalList);
+                //LOGGER.debug("Equal List = ");
+                //LOGGER.debug(equalList);
 
                 if (equalList.size() > n) {
                     System.out.println("Something strange: n = " + n + " equalList.size() = " + equalList.size());
@@ -201,5 +216,26 @@ public class PuzzleCellGroup {
             }
         }
         return pairs;
+    }
+
+    public void assignAll(PuzzleCell otherThenThis, int value) {
+        for (Integer key : indexToCell.keySet()) {
+            PuzzleCell cell = indexToCell.get(key);
+            if(cell != otherThenThis){
+                if(cell.isAddable(otherThenThis, value))
+                   cell.getValues().add(value);
+            }
+        }
+    }
+
+    public boolean isValueAssigned(PuzzleCell otherThenThis, int value) {
+        for (Integer key : indexToCell.keySet()) {
+            PuzzleCell cell = indexToCell.get(key);
+            if(cell != otherThenThis){
+                if(cell.getValue() ==  value)
+                    return true;
+            }
+        }
+        return false;
     }
 }

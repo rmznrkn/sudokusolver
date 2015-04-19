@@ -1,9 +1,14 @@
 package sudoku.solver.desktopedition;
 
 import org.apache.log4j.Logger;
+import org.ini4j.Profile.Section;
+import org.ini4j.Wini;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,12 +29,43 @@ public class ViewCellMap extends JPanel {
     }
 
     public void createSudoku() {
+        org.ini4j.Wini ini = null;
+        String font = "Courier New";
+        Color cellBorderLine = Color.LIGHT_GRAY;
+        Color cellFill = Color.WHITE;
+        Integer cellLineTickness = 1;
+        Color singleValue = Color.ORANGE;
+        Color multiValue = Color.BLUE;
+        Color squareFill = Color.LIGHT_GRAY;
+        Color squareBorderLine = Color.BLACK;
+        Integer squareLineTickness = 3;
+
+        try {
+            ini = new Wini(ViewCellMap.class.getClassLoader().getResourceAsStream("config/sudoku-desktopedition.ini"));
+            Section section = ini.get("sudokumap");
+
+            font = section.get("font");
+
+            cellBorderLine = new Color(Integer.parseInt(section.get("cellBorderLine"),16));
+            cellFill = new Color(Integer.parseInt(section.get("cellFill"),16));
+            cellLineTickness = Integer.parseInt(section.get("cellLineTickness"),16);
+            singleValue = new Color(Integer.parseInt(section.get("singleValue"),16));
+            multiValue = new Color(Integer.parseInt(section.get("multiValue"),16));
+            squareFill = new Color(Integer.parseInt(section.get("squareFill"),16));
+            squareBorderLine = new Color(Integer.parseInt(section.get("squareBorderLine"),16));
+            squareLineTickness =Integer.parseInt(section.get("squareLineTickness"),16);
+
+        }catch (Exception e){
+            LOGGER.error(e.toString());
+            LOGGER.error(e.getMessage());
+        }
+
         for (int n = 0; n < sudokuSize * sudokuSize; n++) {
             for (int m = 0; m < sudokuSize * sudokuSize; m++) {
                 addRec(objectMap.getCell(m, n),
                         n * cellWith + mapTopX, m * cellHeight + mapTopY, cellWith, cellHeight,
-                        Color.LIGHT_GRAY, 1,
-                        Color.WHITE, Color.orange,Color.blue,"Courier New");
+                        cellBorderLine, cellLineTickness,
+                        cellFill, singleValue, multiValue,font);
             }
         }
         int with = sudokuSize * cellWith;
@@ -38,8 +74,8 @@ public class ViewCellMap extends JPanel {
             for (int j = 0; j < sudokuSize; j++) {
                 addRec(null,
                         i * with + mapTopX, j * height + mapTopY, with, height,
-                        Color.BLACK, 3,
-                        Color.LIGHT_GRAY, Color.orange,Color.blue,"Courier New");
+                        squareBorderLine, squareLineTickness,
+                        squareFill, singleValue,multiValue,font);
             }
         }
     }

@@ -2,6 +2,8 @@ package sudoku.solver.desktopedition;
 
 import org.apache.log4j.Logger;
 
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +14,7 @@ import java.util.Map;
  */
 public class PuzzleCellHistoryCache {
     private static final Logger LOGGER = Logger.getLogger(PuzzleCellHistoryCache.class);
-    private final static Map<PuzzleCell, Map<Long, List<Integer>>> versionMap = new HashMap<PuzzleCell, Map<Long, List<Integer>>>();
+    private final static Map<PuzzleCell, Map<Long, String>> versionMap = new HashMap<PuzzleCell, Map<Long, String>>();
     private final static Map<PuzzleCell, List<Long>> versionNumberMap = new HashMap<PuzzleCell, List<Long>>();
     private static long version = 0;
     private static long userSelectedVersion = 0;
@@ -31,8 +33,29 @@ public class PuzzleCellHistoryCache {
         System.out.print("]\n");
     }
 
+    private static PuzzleCell getCell(String str){
+        ByteArrayInputStream buffer = new ByteArrayInputStream(str.getBytes(Charset.forName("ISO-8859-9")));
+        try {
+            return (PuzzleCell)SerializerUtil.deserialize(buffer);
+        } catch (IOException e) {
+            LOGGER.error(e);
+        } catch (ClassNotFoundException e) {
+            LOGGER.error(e);
+        }
+        return null;
+    }
+    private static String getString(PuzzleCell cell){
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            SerializerUtil.serialize(cell, buffer);
+            return new String(buffer.toByteArray(), Charset.forName("ISO-8859-9"));
+        } catch (IOException e) {
+            LOGGER.error(e);
+        }
+        return null;
+    }
     private static void updateVersion(PuzzleCell puzzleCell, long newVersion) {
-        Map<Long, List<Integer>> cellVersions = versionMap.get(puzzleCell);
+        Map<Long, String> cellVersions = versionMap.get(puzzleCell);
         List<Long> savedVersionNumbers = versionNumberMap.get(puzzleCell);
         if (savedVersionNumbers == null)
             return;
@@ -40,18 +63,18 @@ public class PuzzleCellHistoryCache {
         if (lastVersion >= newVersion)
             return;
 
-        List<Integer> data = cellVersions.remove(lastVersion);
+        String data =cellVersions.remove(lastVersion);
         cellVersions.put(newVersion, data);
         savedVersionNumbers.remove(savedVersionNumbers.size() - 1);
         savedVersionNumbers.add(newVersion);
     }
 
     private static boolean saveVersion(PuzzleCell puzzleCell) {
-        Map<Long, List<Integer>> cellVersions = versionMap.get(puzzleCell);
+        Map<Long, String> cellVersions = versionMap.get(puzzleCell);
         List<Long> savedVersionNumbers = versionNumberMap.get(puzzleCell);
 
         if (cellVersions == null) {
-            cellVersions = new HashMap<Long, List<Integer>>();
+            cellVersions = new HashMap<Long, String>();
             versionMap.put(puzzleCell, cellVersions);
         }
         if (savedVersionNumbers == null) {
@@ -59,21 +82,17 @@ public class PuzzleCellHistoryCache {
             versionNumberMap.put(puzzleCell, savedVersionNumbers);
         }
 
-
-        List<Integer> lastSavedVersion
-                = (savedVersionNumbers.size() <= 0) ? null : cellVersions.get(savedVersionNumbers.get(savedVersionNumbers.size() - 1));
-
-        if (lastSavedVersion != null) {
-            if (puzzleCell.getValues().size() == lastSavedVersion.size()) {
-                if (puzzleCell.getValues().containsAll(lastSavedVersion)) {
-                    return false;
-                }
-            }
+        PuzzleCell lastSavedVersion = null;
+        if(savedVersionNumbers.size() > 0){
+            lastSavedVersion = getCell(cellVersions.get(savedVersionNumbers.get(savedVersionNumbers.size() - 1)));
         }
 
-        lastSavedVersion = new ArrayList<Integer>();
-        puzzleCell.copyValues(lastSavedVersion);
-        cellVersions.put(version + 1, lastSavedVersion);
+        if (puzzleCell.isVersionsEqual(lastSavedVersion)) {
+             return false;
+        }
+
+        String str = getString(puzzleCell);
+        cellVersions.put(version + 1, str);
         savedVersionNumbers.add(version + 1);
 
         return true;
@@ -96,8 +115,8 @@ public class PuzzleCellHistoryCache {
         LOGGER.debug("version: " + version + ", saveCount: " + count);
     }
 
-    private static List<Integer> getVersion(PuzzleCell puzzleCell, long versionNumber) {
-        Map<Long, List<Integer>> cellVersions = versionMap.get(puzzleCell);
+    private static PuzzleCell getVersion(PuzzleCell puzzleCell, long versionNumber) {
+        Map<Long, String> cellVersions = versionMap.get(puzzleCell);
         List<Long> savedVersionNumbers = versionNumberMap.get(puzzleCell);
 
         long foundVersionNumber = -1;
@@ -106,7 +125,7 @@ public class PuzzleCellHistoryCache {
                 break;
             foundVersionNumber = savedVersionNumbers.get(i);
         }
-        return cellVersions.get(foundVersionNumber);
+        return getCell(cellVersions.get(foundVersionNumber));
     }
 
     synchronized public static void selectPreviousVersion(List<PuzzleCell> clist) {
@@ -120,8 +139,13 @@ public class PuzzleCellHistoryCache {
         userIterationCount++;
         userSelectedVersion--;
         LOGGER.debug("selectPreviousVersion.userSelectedVersion: " + userSelectedVersion);
+
+        PuzzleCell.resetSelected();
+
         for (PuzzleCell puzzleCell : clist) {
-            puzzleCell.loadVersion(getVersion(puzzleCell, userSelectedVersion));
+            PuzzleCell saved = getVersion(puzzleCell, userSelectedVersion);
+            if(saved != null)
+            puzzleCell.loadVersion(saved);
         }
     }
 

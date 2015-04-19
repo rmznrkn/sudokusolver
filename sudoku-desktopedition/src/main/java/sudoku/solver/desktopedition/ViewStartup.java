@@ -1,8 +1,9 @@
 package sudoku.solver.desktopedition;
 
 import org.apache.log4j.Logger;
-
+import org.ini4j.*;
 import javax.swing.*;
+import java.io.File;
 
 /**
  * @author ramazan
@@ -84,6 +85,7 @@ public class ViewStartup extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         if (win == null) {
+            LOGGER.debug("Deneme");
             win = new ViewMainFrame(Integer.parseInt(jComboBox1.getSelectedItem().toString()));
             win.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             win.setVisible(true);

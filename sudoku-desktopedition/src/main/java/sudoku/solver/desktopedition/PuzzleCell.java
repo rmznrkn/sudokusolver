@@ -6,6 +6,7 @@
 package sudoku.solver.desktopedition;
 import org.apache.log4j.Logger;
 
+import java.io.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,17 +15,33 @@ import java.util.Set;
 /**
  * @author ramazan
  */
-public class PuzzleCell {
+public class PuzzleCell implements Serializable, ObjectInputValidation {
     private static final Logger LOGGER = Logger.getLogger(PuzzleCell.class);
-    private final Set<Integer> values;
-    private final int index;
-    private final int rowIndex;
-    private final int columnIndex;
-    private final int squareIndex;
+    private Set<Integer> values;
+    private int index;
+    private int rowIndex;
+    private int columnIndex;
+    private int squareIndex;
     private int sudokuSize;
     private ViewCell rec;
+    private PuzzleCellGroup row;
+    private PuzzleCellGroup column;
+    private PuzzleCellGroup square;
+    private boolean lastClicked;
+    private static PuzzleCell selectedCell;
+    public PuzzleCell(){
 
+    }
+    public static void resetSelected(){
+        if(selectedCell != null){
+            selectedCell.row.setSelected(false);
+            selectedCell.column.setSelected(false);
+            selectedCell.square.setSelected(false);
+            selectedCell.setLastClicked(false);
+        }
 
+        selectedCell = null;
+    }
     public PuzzleCell(int index, int sudokuSize, int cellGoupCount) {
         this.index = index;
         this.sudokuSize = sudokuSize;
@@ -41,16 +58,83 @@ public class PuzzleCell {
         rec = null;
     }
 
-    //Inserts     
+    public boolean isLastClicked() {
+        return lastClicked;
+    }
+
+    public void setLastClicked(boolean lastClicked) {
+        this.lastClicked = lastClicked;
+    }
+
+    public PuzzleCellGroup getRow() {
+        return row;
+    }
+
+    public void setRow(PuzzleCellGroup row) {
+        this.row = row;
+    }
+
+    public PuzzleCellGroup getColumn() {
+        return column;
+    }
+
+    public void setColumn(PuzzleCellGroup column) {
+        this.column = column;
+    }
+
+    public PuzzleCellGroup getSquare() {
+        return square;
+    }
+
+    public void setSquare(PuzzleCellGroup square) {
+        this.square = square;
+    }
+
+    protected void removeAssignedCell(int value){
+        row.removeAssignedCell(value);
+        column.removeAssignedCell(value);
+        square.removeAssignedCell(value);
+    }
+
+    protected void setSelected(){
+        if (selectedCell == this)
+            return;
+
+        if(selectedCell != null){
+            selectedCell.row.setSelected(false);
+            selectedCell.column.setSelected(false);
+            selectedCell.square.setSelected(false);
+            selectedCell.setLastClicked(false);
+        }
+
+        row.setSelected(true);
+        column.setSelected(true);
+        square.setSelected(true);
+        setLastClicked(true);
+        selectedCell = this;
+    }
+
+    public boolean isSelected(){
+        return (row.isSelected() || column.isSelected() || square.isSelected());
+    }
+
+    //Inserts
     protected void assign(int value) {
         values.clear();
         values.add(value);
     }
 
+    protected void assignAll(PuzzleCell otherThenThis, int value) {
+        row.assignAll(otherThenThis, value);
+        column.assignAll(otherThenThis,value);
+        square.assignAll(otherThenThis, value);
+    }
+
     protected void fillAllValues() {
         values.clear();
         for (int i = 0; i < sudokuSize * sudokuSize; i++) {
-            values.add(i + 1);
+            if(isAddable(this, i+1))
+                values.add(i + 1);
         }
     }
 
@@ -59,6 +143,15 @@ public class PuzzleCell {
         values.clear();
         for (Integer v : version) {
             values.add(v);
+        }
+    }
+
+    protected void loadVersion(PuzzleCell other) {
+        if (other == null) return;
+        values.clear();
+        values.addAll(other.getValues());
+        if(other.isLastClicked()) {
+            setSelected();
         }
     }
 
@@ -97,7 +190,7 @@ public class PuzzleCell {
     }
 
     public int getValue() {
-        return (values.size() != 1) ? Integer.MAX_VALUE : getValueList()[0];
+        return (values.size() != 1) ? Integer.MAX_VALUE : values.iterator().next();
     }
 
     public int getPossibleValueCount() {
@@ -139,5 +232,41 @@ public class PuzzleCell {
         for (Integer v : values) {
             cvlist.add(v);
         }
+    }
+
+    public String toString() {
+        String str = String.format("Cell[ %2d,%2d,%2d] = ",rowIndex, columnIndex, squareIndex);
+        for (int i = 0; i < sudokuSize*sudokuSize; i++) {
+            str += (values.contains(i+1))?String.format("%d", i+1):" ";
+        }
+        return str;
+    }
+
+    public boolean isAddable(PuzzleCell otherThenThis, int value) {
+        return !row.isValueAssigned(otherThenThis, value) || !column.isValueAssigned(otherThenThis,value) ||  !square.isValueAssigned(otherThenThis,value);
+    }
+
+    public boolean isVersionsEqual(PuzzleCell other){
+        return (other != null &&
+                isSelected() == other.isSelected() &&
+                values.size() == other.getValues().size() &&
+                values.containsAll(other.getValues()));
+    }
+
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException{
+        ois.defaultReadObject();
+        values = (Set<Integer>)ois.readObject();
+        setLastClicked(ois.readBoolean());
+    }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException{
+        oos.defaultWriteObject();
+        oos.writeObject(values);
+        oos.writeBoolean(isLastClicked());
+    }
+
+    @Override
+    public void validateObject() throws InvalidObjectException {
+        if(values == null) throw new InvalidObjectException("values can not be null");
     }
 }

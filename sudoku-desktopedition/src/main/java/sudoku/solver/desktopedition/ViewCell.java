@@ -3,10 +3,11 @@ package sudoku.solver.desktopedition;
 import org.apache.log4j.Logger;
 
 import java.awt.*;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ViewCell {
+public class ViewCell implements Serializable {
     private static final Logger LOGGER = Logger.getLogger(ViewCell.class);
     private final PuzzleCell puzzleCell;
     private final Rectangle cellRectangle;
@@ -90,7 +91,8 @@ public class ViewCell {
 
         if (puzzleCell != null){
             g.setColor(fillColor);
-            g2.fillRect(cellRectangle.x, cellRectangle.y, cellRectangle.width, cellRectangle.height);
+            if(!puzzleCell.isSelected())
+                g2.fillRect(cellRectangle.x, cellRectangle.y, cellRectangle.width, cellRectangle.height);
         }
 
         g2.setStroke(new BasicStroke(lineSize));

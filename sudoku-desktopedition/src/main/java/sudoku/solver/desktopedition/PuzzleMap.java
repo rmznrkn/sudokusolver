@@ -51,8 +51,16 @@ public class PuzzleMap {
             return;
 
         PuzzleCellHistoryCache.saveVersion(puzzleCells);
+
+        puzzleCell.removeAssignedCell(value);
         puzzleCell.assign(value);
+        LOGGER.debug(puzzleCell);
+
         simplify();
+
+        LOGGER.debug(puzzleCell);
+
+        puzzleCell.setSelected();
     }
 
     public void deleteValue(PuzzleCell puzzleCell) {
@@ -122,9 +130,14 @@ public class PuzzleMap {
         puzzleCells.add(puzzleCell);
         PuzzleCellGroup container = rows.get(puzzleCell.getRowIndex());
         container.add(puzzleCell);
+        puzzleCell.setRow(container);
+
         container = squares.get(puzzleCell.getSquareIndex());
         container.add(puzzleCell);
+        puzzleCell.setSquare(container);
+
         container = columns.get(puzzleCell.getColumnIndex());
         container.add(puzzleCell);
+        puzzleCell.setColumn(container);
     }
 }
