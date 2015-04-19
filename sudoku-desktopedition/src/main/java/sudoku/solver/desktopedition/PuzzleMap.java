@@ -47,8 +47,10 @@ public class PuzzleMap {
     }
 
     public void setValue(PuzzleCell puzzleCell, int value) {
-        if (puzzleCell.getValue() == value)
+
+        if (puzzleCell.isFriezed() || !puzzleCell.isAddable(puzzleCell, value)) {
             return;
+        }
 
         PuzzleCellHistoryCache.saveVersion(puzzleCells);
 
@@ -58,18 +60,62 @@ public class PuzzleMap {
 
         simplify();
 
+        if(isSatisfied()){
+            freeze();
+        }
+
         LOGGER.debug(puzzleCell);
 
         puzzleCell.setSelected();
+        puzzleCell.setValueSetByUser(value);
+
+    }
+
+    private boolean isSatisfied() {
+        boolean isSatisfied = true;
+        for (int i = 0; i < cellCountPerGroup; i++) {
+
+            if (!squares.get(i).isSatisfied()) {
+                isSatisfied = false;
+                break;
+            }
+            if (!rows.get(i).isSatisfied()) {
+                isSatisfied = false;
+                break;
+            }
+            if (!columns.get(i).isSatisfied()){
+                isSatisfied = false;
+                break;
+            }
+        }
+        return isSatisfied;
     }
 
     public void deleteValue(PuzzleCell puzzleCell) {
-        if (puzzleCell.getPossibleValueCount() == sudokuSize * sudokuSize)
+        if (puzzleCell.getPossibleValueCount() == sudokuSize * sudokuSize) {
+            puzzleCell.setSelected();
             return;
+        }
 
         PuzzleCellHistoryCache.saveVersion(puzzleCells);
+
+        if(puzzleCell.getValues().size() == 1)
+            puzzleCell.assignAll(puzzleCell, puzzleCell.getValue());
+
         puzzleCell.fillAllValues();
+
+        LOGGER.debug(puzzleCell);
+
         simplify();
+
+        LOGGER.debug(puzzleCell);
+
+        puzzleCell.setSelected();
+
+        puzzleCell.setValueSetByUser(Integer.MAX_VALUE);
+        if(isSatisfied()){
+            freeze();
+        }
     }
 
     public int getCellCountPerMap() {
@@ -139,5 +185,20 @@ public class PuzzleMap {
         container = columns.get(puzzleCell.getColumnIndex());
         container.add(puzzleCell);
         puzzleCell.setColumn(container);
+    }
+
+    public int getChangeCount() {
+        int cnt = 0;
+        for(PuzzleCell cell : puzzleCells){
+            if(!cell.isFriezed() && cell.getValues().size() == 1)
+                cnt++;
+        }
+        return cnt;
+    }
+
+    public void freeze(){
+        for(PuzzleCell cell: puzzleCells){
+            cell.freeze();
+        }
     }
 }

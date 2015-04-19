@@ -3,12 +3,8 @@ package sudoku.solver.desktopedition;
 import org.apache.log4j.Logger;
 import org.ini4j.Profile.Section;
 import org.ini4j.Wini;
-
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -145,29 +141,36 @@ public class ViewCellMap extends JPanel {
         }
     }
 
-    public void delete(Point point) {
+    private PuzzleCell getPuzzleCell(Point point){
         int c = (point.x - mapTopX) / cellWith;
         int r = (point.y - mapTopY) / cellHeight;
 
-        PuzzleCell puzzleCell = objectMap.getCell(r, c);
+        return objectMap.getCell(r, c);
+    }
+
+    public void delete(Point point) {
+        PuzzleCell puzzleCell = getPuzzleCell(point);
         if (puzzleCell == null) {
-            System.out.println("PuzzleCell == null; Point:" + point.x + "," + point.y + "; (r,c):(" + r + "," + c + ")");
+            LOGGER.warn(point);
+            LOGGER.warn(puzzleCell);
             return;
         }
         objectMap.deleteValue(puzzleCell);
     }
 
     public void setRecValue(Point point, int value) {
-        int c = (point.x - mapTopX) / cellWith;
-        int r = (point.y - mapTopY) / cellHeight;
-
-        PuzzleCell puzzleCell = objectMap.getCell(r, c);
+        PuzzleCell puzzleCell = getPuzzleCell(point);
         if (puzzleCell == null) {
-            System.out.println("PuzzleCell == null; Point:" + point.x + "," + point.y + "; (r,c):(" + r + "," + c + ")");
+            LOGGER.warn(point);
+            LOGGER.warn(puzzleCell);
             return;
         }
 
         objectMap.setValue(puzzleCell, value);
+    }
+
+    public void freezeContents() {
+        objectMap.freeze();
     }
 
     public List<ViewCell> getUnindexedRecs() {

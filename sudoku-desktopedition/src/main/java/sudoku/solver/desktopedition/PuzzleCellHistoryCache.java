@@ -145,7 +145,7 @@ public class PuzzleCellHistoryCache {
         for (PuzzleCell puzzleCell : clist) {
             PuzzleCell saved = getVersion(puzzleCell, userSelectedVersion);
             if(saved != null)
-            puzzleCell.loadVersion(saved);
+                puzzleCell.loadVersion(saved);
         }
     }
 

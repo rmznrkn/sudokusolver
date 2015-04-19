@@ -29,9 +29,23 @@ public class PuzzleCell implements Serializable, ObjectInputValidation {
     private PuzzleCellGroup square;
     private boolean lastClicked;
     private static PuzzleCell selectedCell;
+    private boolean freeze = false;
+    private int valueSetByUser = Integer.MAX_VALUE;
     public PuzzleCell(){
 
     }
+    public int getValueSetByUser() {
+        return valueSetByUser;
+    }
+
+    public void setValueSetByUser(int valueSetByUser) {
+        this.valueSetByUser = valueSetByUser;
+    }
+
+    public boolean isSetByUser(){
+        return valueSetByUser != Integer.MAX_VALUE && valueSetByUser == getValue();
+    }
+
     public static void resetSelected(){
         if(selectedCell != null){
             selectedCell.row.setSelected(false);
@@ -119,9 +133,13 @@ public class PuzzleCell implements Serializable, ObjectInputValidation {
     }
 
     //Inserts
-    protected void assign(int value) {
+    protected boolean assign(int value) {
+        if(isFriezed())
+            return false;
+
         values.clear();
         values.add(value);
+        return true;
     }
 
     protected void assignAll(PuzzleCell otherThenThis, int value) {
@@ -131,6 +149,8 @@ public class PuzzleCell implements Serializable, ObjectInputValidation {
     }
 
     protected void fillAllValues() {
+        if(isFriezed())
+            return;
         values.clear();
         for (int i = 0; i < sudokuSize * sudokuSize; i++) {
             if(isAddable(this, i+1))
@@ -153,10 +173,14 @@ public class PuzzleCell implements Serializable, ObjectInputValidation {
         if(other.isLastClicked()) {
             setSelected();
         }
+        freeze = other.isFriezed();
     }
 
     //Removes    
     protected boolean remove(int tobeRemovedValue) {
+        if(isFriezed())
+            return false;
+
         if (values.contains(tobeRemovedValue)) {
             values.remove(tobeRemovedValue);
             return true;
@@ -243,11 +267,15 @@ public class PuzzleCell implements Serializable, ObjectInputValidation {
     }
 
     public boolean isAddable(PuzzleCell otherThenThis, int value) {
-        return !row.isValueAssigned(otherThenThis, value) || !column.isValueAssigned(otherThenThis,value) ||  !square.isValueAssigned(otherThenThis,value);
+        return !isFriezed() &&
+                !row.isValueAssigned(otherThenThis, value) &&
+                !column.isValueAssigned(otherThenThis,value) &&
+                !square.isValueAssigned(otherThenThis,value);
     }
 
     public boolean isVersionsEqual(PuzzleCell other){
         return (other != null &&
+                freeze == other.isFriezed() &&
                 isSelected() == other.isSelected() &&
                 values.size() == other.getValues().size() &&
                 values.containsAll(other.getValues()));
@@ -257,16 +285,27 @@ public class PuzzleCell implements Serializable, ObjectInputValidation {
         ois.defaultReadObject();
         values = (Set<Integer>)ois.readObject();
         setLastClicked(ois.readBoolean());
+        freeze = ois.readBoolean();
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException{
         oos.defaultWriteObject();
         oos.writeObject(values);
         oos.writeBoolean(isLastClicked());
+        oos.writeBoolean(freeze);
     }
 
     @Override
     public void validateObject() throws InvalidObjectException {
         if(values == null) throw new InvalidObjectException("values can not be null");
+    }
+
+    public void freeze() {
+        if(isSetByUser())
+            freeze = true;
+    }
+
+    public boolean isFriezed(){
+        return freeze;
     }
 }

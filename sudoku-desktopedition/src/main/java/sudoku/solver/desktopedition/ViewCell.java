@@ -21,7 +21,8 @@ public class ViewCell implements Serializable {
     private int lineSize;
     private Font multiValueFont;
     private Font singleValueFont;
-
+    private Color textColorFreezedValue = Color.DARK_GRAY;
+    private Font freezedFont;
 
     public ViewCell(PuzzleCell puzzleCell,
                     int x, int y, int w, int h,
@@ -50,7 +51,7 @@ public class ViewCell implements Serializable {
 
         int size = (w > h) ? h : w;
         singleValueFont = new Font(textFont, Font.CENTER_BASELINE, size-2);
-
+        freezedFont = new Font("Courier New",Font.CENTER_BASELINE|Font.BOLD, size - 2 );
         w = cellRectangle.width / puzzleCell.getSudokuSize();
         h = cellRectangle.height / puzzleCell.getSudokuSize();
 
@@ -107,9 +108,12 @@ public class ViewCell implements Serializable {
         if(vlist == null)
             return;
 
-        if (vlist.length == 1) {
+        if (puzzleCell.isSetByUser()) {
             Integer v = puzzleCell.getValue();
-            paintText(g, v.toString(), singleValueToRectangle.get(v), singleValueFont, textColorSingleValue);
+            if(puzzleCell.isFriezed())
+                paintText(g, v.toString(), singleValueToRectangle.get(v), freezedFont, textColorFreezedValue);
+            else
+                paintText(g, v.toString(), singleValueToRectangle.get(v), singleValueFont, textColorSingleValue);
         } else {
             for (Integer v : vlist) {
                 paintText(g, v.toString(), valueToRectangle.get(v), multiValueFont,  textColorMultiValue);

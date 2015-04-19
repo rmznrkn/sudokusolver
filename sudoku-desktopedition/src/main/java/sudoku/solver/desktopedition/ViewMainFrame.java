@@ -20,6 +20,7 @@ public class ViewMainFrame extends JFrame {
     private JToggleButton selectedButton = null;
     private JToggleButton undoButton = null;
     private JToggleButton redoButton = null;
+    private JToggleButton freezeButton = null;
 
     public ViewMainFrame(int size) {
         super("Sudoku solver");
@@ -63,6 +64,13 @@ public class ViewMainFrame extends JFrame {
         numberBar.add(button);
         numberBar.addSeparator();
 
+        freezeButton = button = new JToggleButton("Freeze");
+        button.addMouseListener(actionListener);
+        numberButtons.add(button);
+        formatMenu.add(button);
+        numberBar.add(button);
+        numberBar.addSeparator();
+
         numberBar.setMaximumSize(drawingPanel.getSize());
 
         int cellWith = 50;
@@ -94,7 +102,7 @@ public class ViewMainFrame extends JFrame {
 
         setUndoView();
         setRedoView();
-
+        setFreezeButtonView();
         this.setVisible(true);
     }
 
@@ -113,17 +121,25 @@ public class ViewMainFrame extends JFrame {
             undoButton.setForeground(Color.DARK_GRAY);
     }
 
+    private void setFreezeButtonView() {
+        if (drawingPanel.getObjectMap().getChangeCount() > 0)
+            freezeButton.setForeground(Color.GREEN);
+        else
+            freezeButton.setForeground(Color.DARK_GRAY);
+    }
+
     private void setValue(Point p) {
         if (selectedButton == null)
             return;
         if (selectedButton.getText().equalsIgnoreCase("Delete")) {
-
+            drawingPanel.delete(p);
         } else {
             drawingPanel.setRecValue(p, Integer.parseInt(selectedButton.getText()));
         }
 
         setUndoView();
         setRedoView();
+        setFreezeButtonView();
     }
 
     class NumberActionListener implements MouseListener {
@@ -135,6 +151,7 @@ public class ViewMainFrame extends JFrame {
 
                 setUndoView();
                 setRedoView();
+                setFreezeButtonView();
                 repaint();
                 return;
             } else if (selected == undoButton) {
@@ -142,6 +159,14 @@ public class ViewMainFrame extends JFrame {
                         drawingPanel.getObjectMap().getPuzzleCells());
                 setUndoView();
                 setRedoView();
+                setFreezeButtonView();
+                repaint();
+                return;
+            } else if (selected == freezeButton){
+                drawingPanel.freezeContents();
+                setUndoView();
+                setRedoView();
+                setFreezeButtonView();
                 repaint();
                 return;
             }

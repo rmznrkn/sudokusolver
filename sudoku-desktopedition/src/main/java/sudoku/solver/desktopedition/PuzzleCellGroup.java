@@ -2,7 +2,6 @@ package sudoku.solver.desktopedition;
 
 import org.apache.log4j.Logger;
 
-import java.awt.*;
 import java.io.Serializable;
 import java.util.*;
 import java.util.List;
@@ -66,9 +65,9 @@ public class PuzzleCellGroup implements Serializable {
     public boolean isSatisfied() {
         boolean satisfied = true;
         for (Integer key : indexToCell.keySet()) {
-            if (indexToCell.get(key).getPossibleValueCount() > 1) {
-                satisfied = false;
-                break;
+            PuzzleCell cell = indexToCell.get(key);
+            if (!cell.isSetByUser()) {
+                return false;
             }
         }
         return satisfied;
@@ -99,7 +98,7 @@ public class PuzzleCellGroup implements Serializable {
     public boolean simplify() {
 
         boolean simplified = false;
-
+        int determinedCellCount = 0;
         for (Integer i : indexToCell.keySet()) {
             PuzzleCell puzzleCell = indexToCell.get(i);
             if (puzzleCell.getPossibleValueCount() == 1) {
@@ -107,8 +106,12 @@ public class PuzzleCellGroup implements Serializable {
                 if (remove(value) > 1)
                     simplified = true;
                 puzzleCell.assign(value);
+                determinedCellCount++;
             }
         }
+
+        if(determinedCellCount == indexToCell.size())
+            return false;
 
         countValueHits();
 
@@ -118,8 +121,8 @@ public class PuzzleCellGroup implements Serializable {
                 Iterator<PuzzleCell> iterator = value.iterator();
                 PuzzleCell puzzleCell = iterator.next();
                 if (puzzleCell.getPossibleValueCount() > 1) {
-                    puzzleCell.assign(key);
-                    simplified = true;
+                    if(puzzleCell.assign(key))
+                        simplified = true;
                 }
             }
         }
@@ -152,7 +155,7 @@ public class PuzzleCellGroup implements Serializable {
                     equals.add(equalList);
                 }
 
-                havingNitem = getDistjointSet(equalList, havingNitem);
+                havingNitem = getDisjointSet(equalList, havingNitem);
             }
 
             if (equals != null) {
@@ -193,7 +196,7 @@ public class PuzzleCellGroup implements Serializable {
         return equalList;
     }
 
-    private List<PuzzleCell> getDistjointSet(List<PuzzleCell> subset, List<PuzzleCell> wholeSet) {
+    private List<PuzzleCell> getDisjointSet(List<PuzzleCell> subset, List<PuzzleCell> wholeSet) {
         List<PuzzleCell> distinction = null;
         for (PuzzleCell puzzleCell : wholeSet) {
             if (!subset.contains(puzzleCell)) {
