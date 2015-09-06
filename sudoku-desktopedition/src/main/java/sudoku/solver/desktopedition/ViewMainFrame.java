@@ -128,7 +128,7 @@ public class ViewMainFrame extends JFrame {
             }
         };
 
-        drawingPanel.addComponentListener(componentListener);
+        this.addComponentListener(componentListener);
 
         drawingPanel.createSudoku();
 
