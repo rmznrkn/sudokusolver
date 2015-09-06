@@ -31,6 +31,7 @@ public class ViewCell implements Serializable {
                     Color textColorMultiValue,
                     String textFont,
                     Graphics graphics) {
+
         this.puzzleCell = puzzleCell;
         cellRectangle = new Rectangle(x, y, w, h);
         this.lineColor = lineColor;
@@ -92,8 +93,9 @@ public class ViewCell implements Serializable {
 
         if (puzzleCell != null){
             g.setColor(fillColor);
-            if(!puzzleCell.isSelected())
+            if(!puzzleCell.isSelected() && !puzzleCell.isHighlight()) {
                 g2.fillRect(cellRectangle.x, cellRectangle.y, cellRectangle.width, cellRectangle.height);
+            }
         }
 
         g2.setStroke(new BasicStroke(lineSize));
@@ -122,6 +124,10 @@ public class ViewCell implements Serializable {
     }
 
     private void paintText(Graphics g, String text, Rectangle r, Font font,  Color textColor) {
+        if(puzzleCell.isHitByUser()){
+            textColor = Color.RED;
+            puzzleCell.setHitByUser(false);
+        }
         g.setFont(font);
         g.setColor(textColor);
         g.drawString(text, r.x, r.y);

@@ -62,12 +62,13 @@ public class PuzzleCellGroup implements Serializable {
         return removedCount;
     }
 
-    public boolean isSatisfied() {
+    public boolean isSatisfied(boolean checkPossibleValueCount) {
         boolean satisfied = true;
         for (Integer key : indexToCell.keySet()) {
             PuzzleCell cell = indexToCell.get(key);
             if (!cell.isSetByUser()) {
-                return false;
+                if(!checkPossibleValueCount || cell.getPossibleValueCount() != 1)
+                    return  false;
             }
         }
         return satisfied;
@@ -235,8 +236,10 @@ public class PuzzleCellGroup implements Serializable {
         for (Integer key : indexToCell.keySet()) {
             PuzzleCell cell = indexToCell.get(key);
             if(cell != otherThenThis){
-                if(cell.getValue() ==  value)
+                if(cell.getValue() ==  value && cell.isSetByUser()) {
+                    cell.setHitByUser(true);
                     return true;
+                }
             }
         }
         return false;

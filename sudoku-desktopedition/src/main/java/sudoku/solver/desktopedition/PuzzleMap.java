@@ -2,6 +2,8 @@ package sudoku.solver.desktopedition;
 
 import org.apache.log4j.Logger;
 
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +45,11 @@ public class PuzzleMap {
     }
 
     public PuzzleCell getCell(int row, int column) {
-        return puzzleCells.get(row * cellCountPerGroup + column);
+        if(row * cellCountPerGroup + column >= 0 &&
+                row * cellCountPerGroup + column < puzzleCells.size())
+            return puzzleCells.get(row * cellCountPerGroup + column);
+        else
+            return null;
     }
 
     public void setValue(PuzzleCell puzzleCell, int value) {
@@ -60,61 +66,201 @@ public class PuzzleMap {
 
         simplify();
 
-        if(isSatisfied()){
-            freeze();
+        if(isSatisfied(false)){
+            freeze(true, false);
         }
 
         LOGGER.debug(puzzleCell);
 
-        puzzleCell.setSelected();
+        puzzleCell.setSelected(true);
         puzzleCell.setValueSetByUser(value);
 
     }
 
-    private boolean isSatisfied() {
+    public void setValue(PuzzleCell puzzleCell, int value, boolean isTry,
+                         boolean changeComponentSelection, boolean isSimplify,boolean isHighlight) {
+        selectValue(puzzleCell,isHighlight);
+        if (puzzleCell.isFriezed() || !puzzleCell.isAddable(puzzleCell, value)) {
+            puzzleCell.setSelected(false);
+            return;
+        }
+
+        PuzzleCellHistoryCache.saveVersion(puzzleCells);
+
+        puzzleCell.assignValue(value, isTry);
+
+        if(isSimplify)
+            simplify();
+
+        puzzleCell.setSelected(changeComponentSelection);
+        puzzleCell.setValueSetByUser(isTry?Integer.MAX_VALUE:value);
+    }
+
+    public void clearCell(PuzzleCell puzzleCell, int value, boolean isTry) {
+        if (puzzleCell.isFriezed()) {
+            puzzleCell.setSelected(false);
+            return;
+        }
+        PuzzleCellHistoryCache.saveVersion(puzzleCells);
+
+        if(isTry && puzzleCell.getValues().size() > 1)
+            puzzleCell.removeValue(value);
+        else
+            puzzleCell.clear();
+        puzzleCell.setSelected(true);
+    }
+
+    private boolean isSatisfied(boolean checkPossibleValueCount) {
         boolean isSatisfied = true;
         for (int i = 0; i < cellCountPerGroup; i++) {
 
-            if (!squares.get(i).isSatisfied()) {
+            if (!squares.get(i).isSatisfied(checkPossibleValueCount)) {
                 isSatisfied = false;
                 break;
             }
-            if (!rows.get(i).isSatisfied()) {
+            /*if (!rows.get(i).isSatisfied()) {
                 isSatisfied = false;
                 break;
             }
             if (!columns.get(i).isSatisfied()){
                 isSatisfied = false;
                 break;
-            }
+            }*/
         }
         return isSatisfied;
     }
 
-    public void deleteValue(PuzzleCell puzzleCell) {
-        if (puzzleCell.getPossibleValueCount() == sudokuSize * sudokuSize) {
-            puzzleCell.setSelected();
+    public void fillPossibleValues(PuzzleCell puzzleCell, boolean isTry) {
+        if (puzzleCell.getPossibleValueCount() == sudokuSize * sudokuSize ||
+                puzzleCell.getPossibleValueCount() == 1) {
             return;
         }
 
-        PuzzleCellHistoryCache.saveVersion(puzzleCells);
-
-        if(puzzleCell.getValues().size() == 1)
-            puzzleCell.assignAll(puzzleCell, puzzleCell.getValue());
-
         puzzleCell.fillAllValues();
 
-        LOGGER.debug(puzzleCell);
+        puzzleCell.setValueSetByUser(isTry ? Integer.MAX_VALUE : puzzleCell.getValue());
+    }
 
-        simplify();
+    public void clear() {
+        PuzzleCellHistoryCache.saveVersion(puzzleCells);
+        for(PuzzleCell cell: puzzleCells){
+            if(!cell.isFriezed())
+                cell.clear();
+        }
+    }
 
-        LOGGER.debug(puzzleCell);
+    public void fillPossibleValues(boolean isTry, boolean isSimplify) {
+        PuzzleCellHistoryCache.saveVersion(puzzleCells);
+        for(PuzzleCell cell: puzzleCells){
+            if(!cell.isFriezed())
+                fillPossibleValues(cell, isTry);
+        }
 
-        puzzleCell.setSelected();
+        for(PuzzleCell cell: puzzleCells){
+            cell.setHitByUser(false);
+        }
 
-        puzzleCell.setValueSetByUser(Integer.MAX_VALUE);
-        if(isSatisfied()){
-            freeze();
+        if(isSimplify)
+            simplify();
+    }
+
+    public void selectValue(PuzzleCell selectedCell, boolean isHighlight) {
+
+        for(PuzzleCell cell: puzzleCells){
+            cell.getColumn().setSelected(false);
+            cell.getRow().setSelected(false);
+            cell.getSquare().setSelected(false);
+            cell.setHitByUser(false);
+            cell.setHighlight(false);
+        }
+
+        if(!isHighlight)
+            return;
+
+        if(!selectedCell.isFriezed()){
+            return;
+        }
+
+        selectedCell.setHitByUser(true);
+
+        for(PuzzleCell cell: puzzleCells){
+            if(cell.getPossibleValueCount() != 1)
+                continue;
+
+            if(cell.getValue() == selectedCell.getValue()){
+                cell.setHitByUser(true);
+                cell.getColumn().setSelected(true);
+                cell.getRow().setSelected(true);
+                cell.getSquare().setSelected(true);
+            } else {
+                cell.setHighlight(isHighlight);
+            }
+        }
+    }
+
+    public void check() {
+        PuzzleCellHistoryCache.saveVersion(puzzleCells);
+        if(isSatisfied(true))
+            freeze(true, true);
+    }
+
+
+    public void saveToFile(String fileName) {
+        File file = new File(fileName);
+        file.deleteOnExit();
+        FileOutputStream  out;
+        ObjectOutputStream oos;
+        try {
+            file.createNewFile();
+            out = new FileOutputStream (fileName);
+            oos = new ObjectOutputStream(out);
+        } catch (IOException e) {
+            LOGGER.info(e);
+            return;
+        }
+
+        for(PuzzleCell cell: puzzleCells){
+            try {
+                SerializerUtil.serialize(cell, oos);
+            } catch (IOException e) {
+                file.deleteOnExit();
+                LOGGER.error(e);
+                return;
+            }
+        }
+    }
+
+    public void loadFromFile(String fileName) {
+        File file = new File(fileName);
+        FileInputStream inputStream;
+        ObjectInputStream ois;
+        try {
+            inputStream = new FileInputStream(fileName);
+            ois = new ObjectInputStream(inputStream);
+        } catch (IOException e) {
+            LOGGER.error(e);
+            return;
+        }
+
+        try {
+            for (PuzzleCell cell : puzzleCells) {
+                try {
+                    cell.loadVersion((PuzzleCell) SerializerUtil.deserialize(ois));
+                    LOGGER.info("LOADED:" + cell);
+                } catch (IOException e) {
+                    LOGGER.error(e);
+                    return;
+                } catch (ClassNotFoundException e) {
+                    LOGGER.error(e);
+                    return;
+                }
+            }
+        }finally {
+            try {
+                ois.close();
+            } catch (IOException e) {
+                LOGGER.error(e);
+            }
         }
     }
 
@@ -196,9 +342,9 @@ public class PuzzleMap {
         return cnt;
     }
 
-    public void freeze(){
+    public void freeze(boolean value, boolean checkPossibleValueCount){
         for(PuzzleCell cell: puzzleCells){
-            cell.freeze();
+            cell.freeze(value, checkPossibleValueCount);
         }
     }
 }

@@ -76,6 +76,10 @@ public class ViewCellMap extends JPanel {
         }
     }
 
+    public void relayout(){
+        unindexedRecs.clear();
+        createSudoku();
+    }
     public int getMapTopX() {
         return mapTopX;
     }
@@ -148,17 +152,37 @@ public class ViewCellMap extends JPanel {
         return objectMap.getCell(r, c);
     }
 
-    public void delete(Point point) {
+    public void delete(Point point, int value, boolean isTry) {
         PuzzleCell puzzleCell = getPuzzleCell(point);
         if (puzzleCell == null) {
             LOGGER.warn(point);
             LOGGER.warn(puzzleCell);
             return;
         }
-        objectMap.deleteValue(puzzleCell);
+        objectMap.clearCell(puzzleCell, value, isTry);
     }
 
-    public void setRecValue(Point point, int value) {
+    public void delete(int value, boolean isTry) {
+        PuzzleCell puzzleCell = PuzzleCell.getSelectedCell();
+        if (puzzleCell == null) {
+            return;
+        }
+        objectMap.clearCell(puzzleCell, value, isTry);
+    }
+
+    public void clearMap() {
+        objectMap.clear();
+    }
+
+    public void fillPossibleValues(boolean isTry, boolean isSimplify) {
+        objectMap.fillPossibleValues(isTry, isSimplify);
+    }
+
+    public void check() {
+        objectMap.check();
+    }
+
+    public void setRecValue(Point point, int value, boolean isTry, boolean isSimplify, boolean isHighlight) {
         PuzzleCell puzzleCell = getPuzzleCell(point);
         if (puzzleCell == null) {
             LOGGER.warn(point);
@@ -166,11 +190,41 @@ public class ViewCellMap extends JPanel {
             return;
         }
 
-        objectMap.setValue(puzzleCell, value);
+        objectMap.setValue(puzzleCell, value, isTry, true, isSimplify, isHighlight);
     }
 
-    public void freezeContents() {
-        objectMap.freeze();
+    public void setRecValue(int value, boolean isTry, boolean isSimplify,  boolean isHighlight) {
+        PuzzleCell puzzleCell = PuzzleCell.getSelectedCell();
+        if (puzzleCell == null) {
+            return;
+        }
+        objectMap.setValue(puzzleCell, value, isTry, false, isSimplify, isHighlight);
+    }
+
+    public void changeSelection(int deltaRow, int deltaColumn) {
+
+        PuzzleCell puzzleCell = PuzzleCell.getSelectedCell();
+        if (puzzleCell == null) {
+            return;
+        }
+
+        puzzleCell = objectMap.getCell(puzzleCell.getRowIndex()+deltaRow, puzzleCell.getColumnIndex()+deltaColumn);
+
+        if(puzzleCell != null)
+            puzzleCell.setSelected(false);
+    }
+
+    public void changeSelection(Point point, boolean isHighlight) {
+
+        PuzzleCell puzzleCell = getPuzzleCell(point);
+        if (puzzleCell == null) {
+            return;
+        }
+
+        if(puzzleCell != null) {
+            objectMap.selectValue(puzzleCell, isHighlight);
+            puzzleCell.setSelected(false);
+        }
     }
 
     public List<ViewCell> getUnindexedRecs() {

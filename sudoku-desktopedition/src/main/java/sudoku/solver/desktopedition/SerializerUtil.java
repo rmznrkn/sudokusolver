@@ -18,4 +18,15 @@ public class SerializerUtil {
         ObjectOutputStream oos = new ObjectOutputStream(outputStream);
         oos.writeObject(obj);
     }
+
+    public static Object deserialize(ObjectInputStream inputStream) throws IOException,
+            ClassNotFoundException {
+        Object obj = inputStream.readObject();
+        return obj;
+    }
+
+    public static void serialize(Object obj, ObjectOutputStream outputStream)
+            throws IOException {
+        outputStream.writeObject(obj);
+    }
 }
