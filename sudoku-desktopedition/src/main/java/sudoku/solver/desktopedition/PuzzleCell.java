@@ -362,16 +362,16 @@ public class PuzzleCell implements Serializable, ObjectInputValidation {
         if(values == null) throw new InvalidObjectException("values can not be null");
     }
 
-    public void freeze(boolean value, boolean checkPossibleValueCount) {
-        if(value) {
+    public void setFreeze(boolean freeze, boolean checkPossibleValueCount) {
+        if(freeze) {
             if (checkPossibleValueCount && getPossibleValueCount() == 1) {
                 setValueSetByUser(getValue());
             }
 
             if (isSetByUser())
-                freeze = true;
+                this.freeze = true;
         } else
-            freeze = value;
+            this.freeze = freeze;
     }
 
     public boolean isFriezed(){

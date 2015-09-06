@@ -1,11 +1,17 @@
 package sudoku.solver.desktopedition;
 
 import org.apache.log4j.Logger;
-
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +30,7 @@ public class ViewMainFrame extends JFrame {
     private JToggleButton clearMapButton = null;
     private JToggleButton fillMapButton = null;
     private JToggleButton checkMapButton = null;
+    private JToggleButton loadPredefinedMap = null;
     int cellWith = 100;
     int cellHeight = 100;
     int border = 10;
@@ -55,6 +62,101 @@ public class ViewMainFrame extends JFrame {
         return checkBox;
     }
 
+    DocumentBuilderFactory dbFactory = null;
+    DocumentBuilder dBuilder = null;
+    Document xmlDoc = null;
+    NodeList preDefinedMapList = null;
+    String mapNameList[];
+
+    public String [] loadPredefinedMaps() {
+        try {
+            if(dbFactory == null) {
+                dbFactory = DocumentBuilderFactory.newInstance();
+                dBuilder = dbFactory.newDocumentBuilder();
+                xmlDoc = dBuilder.parse(ViewCellMap.class.getClassLoader().getResourceAsStream("config/maps.xml"));
+                xmlDoc.getDocumentElement().normalize();
+                preDefinedMapList = xmlDoc.getElementsByTagName("map");
+                mapNameList = new String[ preDefinedMapList.getLength()];
+                int nameCnt = 0;
+                for (int temp = 0; temp < preDefinedMapList.getLength(); temp++) {
+                    Node map = preDefinedMapList.item(temp);
+                    if (map.getNodeType() == Node.ELEMENT_NODE) {
+                        Element eMap = (Element) map;
+                        try {
+                            mapNameList[nameCnt] =  eMap.getElementsByTagName("name").item(0).getTextContent();
+                            nameCnt++;
+                        } catch (Exception e){
+                            LOGGER.error(e.toString());
+                            continue;
+                        }
+                    }
+                }
+            }
+            return mapNameList;
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+
+        String dummyList[] ={""};
+        return dummyList;
+    }
+
+    public void loadPredefinedMaps(String mapName) {
+
+        try {
+            if(dbFactory == null) {
+                dbFactory = DocumentBuilderFactory.newInstance();
+                dBuilder = dbFactory.newDocumentBuilder();
+                xmlDoc = dBuilder.parse(ViewCellMap.class.getClassLoader().getResourceAsStream("config/maps.xml"));
+                xmlDoc.getDocumentElement().normalize();
+                preDefinedMapList = xmlDoc.getElementsByTagName("map");
+            }
+
+            for (int temp = 0; temp < preDefinedMapList.getLength(); temp++) {
+                Node map = preDefinedMapList.item(temp);
+                if (map.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eMap = (Element) map;
+                    try {
+                        if(eMap.getElementsByTagName("name").item(0).getTextContent().compareToIgnoreCase(mapName) != 0)
+                            continue;
+                    } catch (Exception e){
+                        LOGGER.error(e.toString());
+                        continue;
+                    }
+                    LOGGER.info("Loading predefined map: " + mapName);
+                    drawingPanel.getObjectMap().setFreeze(false, false);
+                    drawingPanel.clearMap();
+                    NodeList cellList = eMap.getElementsByTagName("cell");
+                    for (int i = 0; i < cellList.getLength(); i++) {
+                        Node cell = cellList.item(i);
+                        if(cell.getNodeType() == Node.ELEMENT_NODE){
+                            Element eCell = (Element)cell;
+                            try {
+                                String row = eCell.getElementsByTagName("row").item(0).getTextContent().trim();
+                                String col = eCell.getElementsByTagName("column").item(0).getTextContent().trim();
+                                String val = eCell.getElementsByTagName("value").item(0).getTextContent().trim();
+                                PuzzleCell puzzleCell = drawingPanel.getObjectMap().getCell(Integer.parseInt(row),
+                                        Integer.parseInt(col));
+                                if(puzzleCell == null || Integer.parseInt(val) < 1 || Integer.parseInt(val) > 9)
+                                    continue;
+
+                                LOGGER.info(puzzleCell);
+
+                                puzzleCell.assignValue(Integer.parseInt(val), false);
+                            } catch (Exception e){
+                                LOGGER.error(e.toString());
+                                continue;
+                            }
+                        }
+                    }
+                    drawingPanel.getObjectMap().setFreeze(true, true);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error(e);
+        }
+    }
     public ViewMainFrame(int size) {
         super("Sudoku solver");
 
@@ -76,12 +178,16 @@ public class ViewMainFrame extends JFrame {
         redoButton      = addToolButton("REDO");
         freezeButton    = addToolButton("FREEZE");
         unfreezeButton    = addToolButton("UNFREEZE");
+
         fillMapButton   = addToolButton("FILL MAP");
         checkMapButton   = addToolButton("CHECK");
+        loadPredefinedMap = addToolButton("LOAD MAP");
+
         chkTrying       = addToolCheckbox("Trial");
         chkDeleteNumber = addToolCheckbox("Delete");
         cheSimplify     = addToolCheckbox("Simplify");
         cheHighlight     = addToolCheckbox("Highlight");
+
         drawingPanel.setPreferredSize(new Dimension(size * size * cellWith + border * 2, size * size * cellHeight + border * 2));
         drawingPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
 
@@ -275,7 +381,7 @@ public class ViewMainFrame extends JFrame {
                 repaint();
                 return;
             } else if (selected == freezeButton){
-                drawingPanel.getObjectMap().freeze(true, false);
+                drawingPanel.getObjectMap().setFreeze(true, false);
                 setUndoView();
                 setRedoView();
                 setFreezeButtonView();
@@ -294,10 +400,22 @@ public class ViewMainFrame extends JFrame {
                 repaint();
                 return;
             } else if(selected == unfreezeButton){
-                drawingPanel.getObjectMap().freeze(false, false);
+                drawingPanel.getObjectMap().setFreeze(false, false);
+                repaint();
+                return;
+            } else if(selected == loadPredefinedMap){
+                String[] choices = loadPredefinedMaps();
+                String input = (String) JOptionPane.showInputDialog(null, "Choose predefined maps...",
+                        "The Choice of Map", JOptionPane.QUESTION_MESSAGE, null,
+                        choices,
+                        choices[1]);
+                if(input != null && input != ""){
+                    loadPredefinedMaps(input);
+                }
                 repaint();
                 return;
             }
+
             if (selectedButton != null) {
                 selectedButton.setSelected(false);
                 selectedButton.setForeground(Color.BLACK);

@@ -67,7 +67,7 @@ public class PuzzleMap {
         simplify();
 
         if(isSatisfied(false)){
-            freeze(true, false);
+            setFreeze(true, false);
         }
 
         LOGGER.debug(puzzleCell);
@@ -201,7 +201,7 @@ public class PuzzleMap {
     public void check() {
         PuzzleCellHistoryCache.saveVersion(puzzleCells);
         if(isSatisfied(true))
-            freeze(true, true);
+            setFreeze(true, true);
     }
 
 
@@ -342,9 +342,9 @@ public class PuzzleMap {
         return cnt;
     }
 
-    public void freeze(boolean value, boolean checkPossibleValueCount){
+    public void setFreeze(boolean freeze, boolean checkPossibleValueCount){
         for(PuzzleCell cell: puzzleCells){
-            cell.freeze(value, checkPossibleValueCount);
+            cell.setFreeze(freeze, checkPossibleValueCount);
         }
     }
 }
