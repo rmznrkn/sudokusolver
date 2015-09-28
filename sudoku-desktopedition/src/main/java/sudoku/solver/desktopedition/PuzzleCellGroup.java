@@ -12,11 +12,14 @@ import java.util.List;
 public class PuzzleCellGroup implements Serializable {
     private static final Logger LOGGER = Logger.getLogger(PuzzleCellGroup.class);
     private final Map<Integer, PuzzleCell> indexToCell;
+    private final List<PuzzleCell> cellList;
     private final Map<Integer, Set<PuzzleCell>> valueToCell;
     private boolean selected = false;
+
     public PuzzleCellGroup(int valueCount) {
         indexToCell = new HashMap<Integer, PuzzleCell>();
         valueToCell = new HashMap<Integer, Set<PuzzleCell>>();
+        cellList = new ArrayList<>();
         for (int i = 0; i < valueCount; i++) {
             Set<PuzzleCell> set = new HashSet<PuzzleCell>();
             valueToCell.put(i + 1, set);
@@ -49,6 +52,7 @@ public class PuzzleCellGroup implements Serializable {
     }
 
     public void add(PuzzleCell puzzleCell) {
+        cellList.add(puzzleCell);
         indexToCell.put(puzzleCell.getIndex(), puzzleCell);
     }
 
@@ -91,15 +95,330 @@ public class PuzzleCellGroup implements Serializable {
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
-
+    boolean reduced = false;
     public boolean isSelected(){
         return selected;
+    }
+    final Set<Integer> set = new HashSet<>();
+    public  void simplifyCom2(){
+        for(int i = 0 ; i < indexToCell.size(); i++){
+            for(int j = i; j < indexToCell.size(); j++){
+                if(i != j){
+                    set.clear();
+                    set.addAll(cellList.get(i).getValues());
+                    set.addAll(cellList.get(j).getValues());
+
+                    if(set.size() == 2){
+                        //System.out.println(cellList.get(i));
+                        //System.out.println(cellList.get(j));
+                        //printSet();
+                        for (Integer value : set) {
+                            for (int c = 0; c < cellList.size();c++) {
+                                if (i  != c && j  != c) {
+                                    if(cellList.get(c).remove(value))
+                                    reduced = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void printSet() {
+        String str = String.format("Union = ");
+        for (int i = 0; i < 9; i++) {
+            str += (set.contains(i+1))?String.format("%d", i+1):" ";
+        }
+        //System.out.println(str);
+    }
+
+    public void simplifyCom3(){
+        int n = indexToCell.size();
+        for(int i = 0 ; i < n; i++){
+            for(int j = i ; j < n; j++){
+                for(int k = j; k < n; k++) {
+                    if (i != j && i != k && j != k ) {
+                        set.clear();
+                        set.addAll(cellList.get(i).getValues());
+                        set.addAll(cellList.get(j).getValues());
+                        set.addAll(cellList.get(k).getValues());
+
+                        if(set.size() == 3){
+                            ////System.out.println(cellList.get(i));
+                            ////System.out.println(cellList.get(j));
+                            ////System.out.println(cellList.get(k));
+                            //printSet();
+                            for (Integer value : set) {
+                                for (int key = 0; key <  cellList.size(); key++) {
+                                    if (i  != key &&
+                                            j  != key &&
+                                            k  != key) {
+                                        if(cellList.get(key).remove(value))
+                                        reduced = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void simplifyCom4() {
+        int n = indexToCell.size();
+        for (int i1 = 0; i1 < n; i1++)
+            for (int i2 = i1; i2 < n; i2++)
+                for (int i3 = i2; i3 < n; i3++)
+                    for (int i4 = i3; i4 < n; i4++)
+                        if(i1 != i2 && i1 != i3 && i1 != i4
+                                && i2 != i3 && i2 != i4
+                                && i3 != i4
+                                ){
+                            set.clear();
+
+                            set.addAll(cellList.get(i1).getValues());
+                            set.addAll(cellList.get(i2).getValues());
+                            set.addAll(cellList.get(i3).getValues());
+                            set.addAll(cellList.get(i4).getValues());
+
+                            if(set.size() == 4){
+                               // //System.out.println(cellList.get(i1));
+                               // //System.out.println(cellList.get(i2));
+                               // //System.out.println(cellList.get(i3));
+                               // //System.out.println(cellList.get(i4));
+                               // printSet();
+                                for (Integer value : set) {
+                                    for (int key = 0; key <  cellList.size(); key++) {
+                                        if (
+                                                i1  != key &&
+                                                        i2  != key &&
+                                                        i3  != key &&
+                                                        i4  != key) {
+
+                                            if(cellList.get(key).remove(value))
+                                            reduced = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
+    }
+
+
+    public void simplifyCom5() {
+        int n = indexToCell.size();
+        for (int i1 = 0; i1 < n; i1++)
+            for (int i2 = i1; i2 < n; i2++)
+                for (int i3 = i2; i3 < n; i3++)
+                    for (int i4 = i3; i4 < n; i4++)
+                        for (int i5 = i4; i5 < n; i5++)
+                            if(i1 != i2 && i1 != i3 && i1 != i4 && i1 != i5
+                                    && i2 != i3 && i2 != i4 && i2 != i5
+                                    && i3 != i4 && i3 != i5
+                                    && i4 != i5
+
+                                    ){
+                                set.clear();
+
+                                set.addAll(cellList.get(i1).getValues());
+                                set.addAll(cellList.get(i2).getValues());
+                                set.addAll(cellList.get(i3).getValues());
+                                set.addAll(cellList.get(i4).getValues());
+                                set.addAll(cellList.get(i5).getValues());
+
+                                if(set.size() == 5){
+                                    ////System.out.println(cellList.get(i1));
+                                    ////System.out.println(cellList.get(i2));
+                                    ////System.out.println(cellList.get(i3));
+                                    ////System.out.println(cellList.get(i4));
+                                    ////System.out.println(cellList.get(i5));
+                                    //printSet();
+                                    for (Integer value : set) {
+                                        for (int key = 0; key <  cellList.size(); key++) {
+                                            if (i1  != key &&
+                                                    i2  != key &&
+                                                    i3  != key &&
+                                                    i4  != key &&
+                                                    i5  != key) {
+
+                                                if(cellList.get(key).remove(value))
+                                                reduced = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+
+    }
+
+    public void simplifyCom6() {
+        int n = indexToCell.size();
+        for (int i1 = 0; i1 < n; i1++)
+            for (int i2 = i1; i2 < n; i2++)
+                for (int i3 = i2; i3 < n; i3++)
+                    for (int i4 = i3; i4 < n; i4++)
+                        for (int i5 = i4; i5 < n; i5++)
+                            for (int i6 = i5; i6 < n; i6++)
+                                if(i1 != i2 && i1 != i3 && i1 != i4 && i1 != i5 && i1 != i6
+                                        && i2 != i3 && i2 != i4 && i2 != i5 && i2 != i6
+                                        && i3 != i4 && i3 != i5 && i3 != i6
+                                        && i4 != i5 && i4 != i6
+                                        && i5 != i6
+                                        ){
+                                    set.clear();
+
+                                    set.addAll(cellList.get(i1).getValues());
+                                    set.addAll(cellList.get(i2).getValues());
+                                    set.addAll(cellList.get(i3).getValues());
+                                    set.addAll(cellList.get(i4).getValues());
+                                    set.addAll(cellList.get(i5).getValues());
+                                    set.addAll(cellList.get(i6).getValues());
+                                    ////System.out.println(cellList.get(i1));
+                                    ////System.out.println(cellList.get(i2));
+                                    ////System.out.println(cellList.get(i3));
+                                    ////System.out.println(cellList.get(i4));
+                                    ////System.out.println(cellList.get(i5));
+                                    ////System.out.println(cellList.get(i6));
+                                    if(set.size() == 6){
+                                        for (Integer value : set) {
+                                            for (int key = 0; key <  cellList.size(); key++) {
+                                                if (i1  != key &&
+                                                        i2  != key &&
+                                                        i3  != key &&
+                                                        i4  != key &&
+                                                        i5  != key &&
+                                                        i6  != key) {
+
+                                                    if(cellList.get(key).remove(value))
+                                                    reduced = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+
+    }
+
+    public void simplifyCom7() {
+        int n = indexToCell.size();
+        for (int i1 = 0; i1 < n; i1++)
+            for (int i2 = i1; i2 < n; i2++)
+                for (int i3 = i2; i3 < n; i3++)
+                    for (int i4 = i3; i4 < n; i4++)
+                        for (int i5 = i4; i5 < n; i5++)
+                            for (int i6 = i5; i6 < n; i6++)
+                                for (int i7 = i6; i7 < n; i7++)
+                                    if(i1 != i2 && i1 != i3 && i1 != i4 && i1 != i5 && i1 != i6 && i1 != i7
+                                            && i2 != i3 && i2 != i4 && i2 != i5 && i2 != i6 && i2 != i7
+                                            && i3 != i4 && i3 != i5 && i3 != i6 && i3 != i7
+                                            && i4 != i5 && i4 != i6 && i4 != i7
+                                            && i5 != i6 && i5 != i7
+                                            && i6 != i7){
+                                        set.clear();
+
+                                        set.addAll(cellList.get(i1).getValues());
+                                        set.addAll(cellList.get(i2).getValues());
+                                        set.addAll(cellList.get(i3).getValues());
+                                        set.addAll(cellList.get(i4).getValues());
+                                        set.addAll(cellList.get(i5).getValues());
+                                        set.addAll(cellList.get(i6).getValues());
+                                        set.addAll(cellList.get(i7).getValues());
+                                        ////System.out.println(cellList.get(i1));
+                                        ////System.out.println(cellList.get(i2));
+                                        ////System.out.println(cellList.get(i3));
+                                        ////System.out.println(cellList.get(i4));
+                                        ////System.out.println(cellList.get(i5));
+                                        ////System.out.println(cellList.get(i6));
+                                        ////System.out.println(cellList.get(i7));
+                                        if(set.size() == 7){
+                                            for (Integer value : set) {
+                                                for (int key = 0; key <  cellList.size(); key++) {
+                                                    if (i1  != key &&
+                                                            i2  != key &&
+                                                            i3  != key &&
+                                                            i4  != key &&
+                                                            i5  != key &&
+                                                            i6  != key &&
+                                                            i7  != key) {
+
+                                                        if(cellList.get(key).remove(value))
+                                                        reduced = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+
+    }
+
+    public void simplifyCom8() {
+        int n = indexToCell.size();
+        for (int i1 = 0; i1 < n; i1++)
+            for (int i2 = i1; i2 < n; i2++)
+                for (int i3 = i2; i3 < n; i3++)
+                    for (int i4 = i3; i4 < n; i4++)
+                        for (int i5 = i4; i5 < n; i5++)
+                            for (int i6 = i5; i6 < n; i6++)
+                                for (int i7 = i6; i7 < n; i7++)
+                                    for (int i8 = i7; i8 < n; i8++)
+                                        if(i1 != i2 && i1 != i3 && i1 != i4 && i1 != i5 && i1 != i6 && i1 != i7 && i1 != i8
+                                                && i2 != i3 && i2 != i4 && i2 != i5 && i2 != i6 && i2 != i7 && i2 != i8
+                                                && i3 != i4 && i3 != i5 && i3 != i6 && i3 != i7 && i3 != i8
+                                                && i4 != i5 && i4 != i6 && i4 != i7 && i4 != i8
+                                                && i5 != i6 && i5 != i7 && i5 != i8
+                                                && i6 != i7 && i6 != i8
+                                                && i7 != i8){
+                                            set.clear();
+
+                                            set.addAll(cellList.get(i1).getValues());
+                                            set.addAll(cellList.get(i2).getValues());
+                                            set.addAll(cellList.get(i3).getValues());
+                                            set.addAll(cellList.get(i4).getValues());
+                                            set.addAll(cellList.get(i5).getValues());
+                                            set.addAll(cellList.get(i6).getValues());
+                                            set.addAll(cellList.get(i7).getValues());
+                                            set.addAll(cellList.get(i8).getValues());
+                                           ////System.out.println(cellList.get(i1));
+                                           ////System.out.println(cellList.get(i2));
+                                           ////System.out.println(cellList.get(i3));
+                                           ////System.out.println(cellList.get(i4));
+                                           ////System.out.println(cellList.get(i5));
+                                           ////System.out.println(cellList.get(i6));
+                                           ////System.out.println(cellList.get(i7));
+                                           ////System.out.println(cellList.get(i8));
+                                            if(set.size() == 8){
+                                                for (Integer value : set) {
+                                                    for (int key = 0; key <  cellList.size(); key++) {
+                                                        if (i1  != key &&
+                                                                i2  != key &&
+                                                                i3  != key &&
+                                                                i4  != key &&
+                                                                i5  != key &&
+                                                                i6  != key &&
+                                                                i7  != key &&
+                                                                i8  != key) {
+
+                                                            if(cellList.get(key).remove(value))
+                                                            reduced = true;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
     }
 
     public boolean simplify() {
 
         boolean simplified = false;
-        int determinedCellCount = 0;
+        /*int determinedCellCount = 0;
         for (Integer i : indexToCell.keySet()) {
             PuzzleCell puzzleCell = indexToCell.get(i);
             if (puzzleCell.getPossibleValueCount() == 1) {
@@ -139,15 +458,12 @@ public class PuzzleCellGroup implements Serializable {
                 List<PuzzleCell> equalList = getEquals(firstPuzzleCell, havingNitem);
 
                 if (equalList == null) {
-                    System.out.println("Something strange: n = " + n + " equalList == null");
+                    //System.out.println("Something strange: n = " + n + " equalList == null");
                     break;
                 }
 
-                //LOGGER.debug("Equal List = ");
-                //LOGGER.debug(equalList);
-
                 if (equalList.size() > n) {
-                    System.out.println("Something strange: n = " + n + " equalList.size() = " + equalList.size());
+                    //System.out.println("Something strange: n = " + n + " equalList.size() = " + equalList.size());
                     break;
                 }
 
@@ -168,8 +484,19 @@ public class PuzzleCellGroup implements Serializable {
                 }
             }
         }
+        */
+        reduced = false;
+        simplifyCom8();
+        simplifyCom7();
+        simplifyCom6();
+        simplifyCom5();
+        simplifyCom4();
+        simplifyCom3();
+        simplifyCom2();
+        simplifyCom2();
 
-        return simplified;
+
+        return reduced;
     }
 
     private boolean removeFromOthers(List<PuzzleCell> subcells, int value) {
@@ -227,7 +554,7 @@ public class PuzzleCellGroup implements Serializable {
             PuzzleCell cell = indexToCell.get(key);
             if(cell != otherThenThis){
                 if(cell.isAddable(otherThenThis, value))
-                   cell.getValues().add(value);
+                    cell.getValues().add(value);
             }
         }
     }
