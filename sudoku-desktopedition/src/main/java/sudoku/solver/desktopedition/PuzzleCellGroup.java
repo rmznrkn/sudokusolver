@@ -101,22 +101,19 @@ public class PuzzleCellGroup implements Serializable {
     }
     final Set<Integer> set = new HashSet<>();
     public  void simplifyCom2(){
-        for(int i = 0 ; i < indexToCell.size(); i++){
-            for(int j = i; j < indexToCell.size(); j++){
+        int n = cellList.size();
+        for(int i = 0 ; i < n; i++){
+            for(int j = i; j < n; j++){
                 if(i != j){
                     set.clear();
                     set.addAll(cellList.get(i).getValues());
                     set.addAll(cellList.get(j).getValues());
-
                     if(set.size() == 2){
-                        //System.out.println(cellList.get(i));
-                        //System.out.println(cellList.get(j));
-                        //printSet();
                         for (Integer value : set) {
                             for (int c = 0; c < cellList.size();c++) {
                                 if (i  != c && j  != c) {
                                     if(cellList.get(c).remove(value))
-                                    reduced = true;
+                                        reduced = true;
                                 }
                             }
                         }
@@ -126,16 +123,8 @@ public class PuzzleCellGroup implements Serializable {
         }
     }
 
-    public void printSet() {
-        String str = String.format("Union = ");
-        for (int i = 0; i < 9; i++) {
-            str += (set.contains(i+1))?String.format("%d", i+1):" ";
-        }
-        //System.out.println(str);
-    }
-
     public void simplifyCom3(){
-        int n = indexToCell.size();
+        int n = cellList.size();
         for(int i = 0 ; i < n; i++){
             for(int j = i ; j < n; j++){
                 for(int k = j; k < n; k++) {
@@ -144,19 +133,14 @@ public class PuzzleCellGroup implements Serializable {
                         set.addAll(cellList.get(i).getValues());
                         set.addAll(cellList.get(j).getValues());
                         set.addAll(cellList.get(k).getValues());
-
                         if(set.size() == 3){
-                            ////System.out.println(cellList.get(i));
-                            ////System.out.println(cellList.get(j));
-                            ////System.out.println(cellList.get(k));
-                            //printSet();
                             for (Integer value : set) {
                                 for (int key = 0; key <  cellList.size(); key++) {
                                     if (i  != key &&
                                             j  != key &&
                                             k  != key) {
                                         if(cellList.get(key).remove(value))
-                                        reduced = true;
+                                            reduced = true;
                                     }
                                 }
                             }
@@ -168,7 +152,7 @@ public class PuzzleCellGroup implements Serializable {
     }
 
     public void simplifyCom4() {
-        int n = indexToCell.size();
+        int n = cellList.size();
         for (int i1 = 0; i1 < n; i1++)
             for (int i2 = i1; i2 < n; i2++)
                 for (int i3 = i2; i3 < n; i3++)
@@ -178,18 +162,11 @@ public class PuzzleCellGroup implements Serializable {
                                 && i3 != i4
                                 ){
                             set.clear();
-
                             set.addAll(cellList.get(i1).getValues());
                             set.addAll(cellList.get(i2).getValues());
                             set.addAll(cellList.get(i3).getValues());
                             set.addAll(cellList.get(i4).getValues());
-
                             if(set.size() == 4){
-                               // //System.out.println(cellList.get(i1));
-                               // //System.out.println(cellList.get(i2));
-                               // //System.out.println(cellList.get(i3));
-                               // //System.out.println(cellList.get(i4));
-                               // printSet();
                                 for (Integer value : set) {
                                     for (int key = 0; key <  cellList.size(); key++) {
                                         if (
@@ -199,7 +176,7 @@ public class PuzzleCellGroup implements Serializable {
                                                         i4  != key) {
 
                                             if(cellList.get(key).remove(value))
-                                            reduced = true;
+                                                reduced = true;
                                         }
                                     }
                                 }
@@ -211,7 +188,7 @@ public class PuzzleCellGroup implements Serializable {
 
 
     public void simplifyCom5() {
-        int n = indexToCell.size();
+        int n = cellList.size();
         for (int i1 = 0; i1 < n; i1++)
             for (int i2 = i1; i2 < n; i2++)
                 for (int i3 = i2; i3 < n; i3++)
@@ -221,7 +198,6 @@ public class PuzzleCellGroup implements Serializable {
                                     && i2 != i3 && i2 != i4 && i2 != i5
                                     && i3 != i4 && i3 != i5
                                     && i4 != i5
-
                                     ){
                                 set.clear();
 
@@ -232,12 +208,6 @@ public class PuzzleCellGroup implements Serializable {
                                 set.addAll(cellList.get(i5).getValues());
 
                                 if(set.size() == 5){
-                                    ////System.out.println(cellList.get(i1));
-                                    ////System.out.println(cellList.get(i2));
-                                    ////System.out.println(cellList.get(i3));
-                                    ////System.out.println(cellList.get(i4));
-                                    ////System.out.println(cellList.get(i5));
-                                    //printSet();
                                     for (Integer value : set) {
                                         for (int key = 0; key <  cellList.size(); key++) {
                                             if (i1  != key &&
@@ -247,7 +217,7 @@ public class PuzzleCellGroup implements Serializable {
                                                     i5  != key) {
 
                                                 if(cellList.get(key).remove(value))
-                                                reduced = true;
+                                                    reduced = true;
                                             }
                                         }
                                     }
@@ -258,7 +228,7 @@ public class PuzzleCellGroup implements Serializable {
     }
 
     public void simplifyCom6() {
-        int n = indexToCell.size();
+        int n = cellList.size();
         for (int i1 = 0; i1 < n; i1++)
             for (int i2 = i1; i2 < n; i2++)
                 for (int i3 = i2; i3 < n; i3++)
@@ -279,12 +249,6 @@ public class PuzzleCellGroup implements Serializable {
                                     set.addAll(cellList.get(i4).getValues());
                                     set.addAll(cellList.get(i5).getValues());
                                     set.addAll(cellList.get(i6).getValues());
-                                    ////System.out.println(cellList.get(i1));
-                                    ////System.out.println(cellList.get(i2));
-                                    ////System.out.println(cellList.get(i3));
-                                    ////System.out.println(cellList.get(i4));
-                                    ////System.out.println(cellList.get(i5));
-                                    ////System.out.println(cellList.get(i6));
                                     if(set.size() == 6){
                                         for (Integer value : set) {
                                             for (int key = 0; key <  cellList.size(); key++) {
@@ -296,7 +260,7 @@ public class PuzzleCellGroup implements Serializable {
                                                         i6  != key) {
 
                                                     if(cellList.get(key).remove(value))
-                                                    reduced = true;
+                                                        reduced = true;
                                                 }
                                             }
                                         }
@@ -307,7 +271,7 @@ public class PuzzleCellGroup implements Serializable {
     }
 
     public void simplifyCom7() {
-        int n = indexToCell.size();
+        int n = cellList.size();
         for (int i1 = 0; i1 < n; i1++)
             for (int i2 = i1; i2 < n; i2++)
                 for (int i3 = i2; i3 < n; i3++)
@@ -330,13 +294,6 @@ public class PuzzleCellGroup implements Serializable {
                                         set.addAll(cellList.get(i5).getValues());
                                         set.addAll(cellList.get(i6).getValues());
                                         set.addAll(cellList.get(i7).getValues());
-                                        ////System.out.println(cellList.get(i1));
-                                        ////System.out.println(cellList.get(i2));
-                                        ////System.out.println(cellList.get(i3));
-                                        ////System.out.println(cellList.get(i4));
-                                        ////System.out.println(cellList.get(i5));
-                                        ////System.out.println(cellList.get(i6));
-                                        ////System.out.println(cellList.get(i7));
                                         if(set.size() == 7){
                                             for (Integer value : set) {
                                                 for (int key = 0; key <  cellList.size(); key++) {
@@ -349,7 +306,7 @@ public class PuzzleCellGroup implements Serializable {
                                                             i7  != key) {
 
                                                         if(cellList.get(key).remove(value))
-                                                        reduced = true;
+                                                            reduced = true;
                                                     }
                                                 }
                                             }
@@ -360,7 +317,7 @@ public class PuzzleCellGroup implements Serializable {
     }
 
     public void simplifyCom8() {
-        int n = indexToCell.size();
+        int n = cellList.size();
         for (int i1 = 0; i1 < n; i1++)
             for (int i2 = i1; i2 < n; i2++)
                 for (int i3 = i2; i3 < n; i3++)
@@ -386,14 +343,6 @@ public class PuzzleCellGroup implements Serializable {
                                             set.addAll(cellList.get(i6).getValues());
                                             set.addAll(cellList.get(i7).getValues());
                                             set.addAll(cellList.get(i8).getValues());
-                                           ////System.out.println(cellList.get(i1));
-                                           ////System.out.println(cellList.get(i2));
-                                           ////System.out.println(cellList.get(i3));
-                                           ////System.out.println(cellList.get(i4));
-                                           ////System.out.println(cellList.get(i5));
-                                           ////System.out.println(cellList.get(i6));
-                                           ////System.out.println(cellList.get(i7));
-                                           ////System.out.println(cellList.get(i8));
                                             if(set.size() == 8){
                                                 for (Integer value : set) {
                                                     for (int key = 0; key <  cellList.size(); key++) {
@@ -407,7 +356,7 @@ public class PuzzleCellGroup implements Serializable {
                                                                 i8  != key) {
 
                                                             if(cellList.get(key).remove(value))
-                                                            reduced = true;
+                                                                reduced = true;
                                                         }
                                                     }
                                                 }
@@ -485,15 +434,41 @@ public class PuzzleCellGroup implements Serializable {
             }
         }
         */
+
+        cellList.clear();
+
         reduced = false;
-        simplifyCom8();
-        simplifyCom7();
-        simplifyCom6();
-        simplifyCom5();
-        simplifyCom4();
-        simplifyCom3();
-        simplifyCom2();
-        simplifyCom2();
+        for (Integer i : indexToCell.keySet()) {
+            PuzzleCell puzzleCell = indexToCell.get(i);
+            if (puzzleCell.getPossibleValueCount() == 1) {
+                int value = puzzleCell.getValue();
+                if (remove(value) > 1)
+                    reduced = true;
+                puzzleCell.assign(value);
+            }
+        }
+
+        for (Integer i : indexToCell.keySet()) {
+            PuzzleCell puzzleCell = indexToCell.get(i);
+            if (puzzleCell.getPossibleValueCount() != 1) {
+                cellList.add(puzzleCell);
+            }
+        }
+
+        if(cellList.size() > 2)
+            simplifyCom2();
+        if(cellList.size() > 3)
+            simplifyCom3();
+        if(cellList.size() > 4)
+            simplifyCom4();
+        if(cellList.size() > 5)
+            simplifyCom5();
+        if(cellList.size() > 6)
+            simplifyCom6();
+        if(cellList.size() > 7)
+            simplifyCom7();
+        if(cellList.size() > 8)
+            simplifyCom8();
 
 
         return reduced;

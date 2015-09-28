@@ -150,18 +150,23 @@ public class PuzzleMap {
     }
 
     public void fillPossibleValues(boolean isTry, boolean isSimplify) {
+        long start = System.currentTimeMillis();
         PuzzleCellHistoryCache.saveVersion(puzzleCells);
+        System.out.println("1: " + (System.currentTimeMillis() - start));
         for(PuzzleCell cell: puzzleCells){
             if(!cell.isFriezed())
                 fillPossibleValues(cell, isTry);
         }
 
+        System.out.println("2: " + (System.currentTimeMillis() - start));
         for(PuzzleCell cell: puzzleCells){
             cell.setHitByUser(false);
         }
 
+        System.out.println("3: " + (System.currentTimeMillis() - start));
         if(isSimplify)
             simplify();
+        System.out.println("4: " + (System.currentTimeMillis() - start));
     }
 
     public void selectValue(PuzzleCell selectedCell, boolean isHighlight) {
@@ -275,6 +280,7 @@ public class PuzzleMap {
 
     public void simplify() {
 
+        long start = System.currentTimeMillis();
         int doAgaint;
         do {
             doAgaint = 0;
@@ -288,6 +294,7 @@ public class PuzzleMap {
                     doAgaint++;
             }
         } while (doAgaint > 0);
+        System.out.println("Simplify TimeDuration: " + (System.currentTimeMillis() - start));
     }
 
     public List<PuzzleCellGroup> getSquares() {
