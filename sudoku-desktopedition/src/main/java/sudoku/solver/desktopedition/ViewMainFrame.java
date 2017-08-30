@@ -29,6 +29,7 @@ public class ViewMainFrame extends JFrame {
     private JToggleButton unfreezeButton = null;
     private JToggleButton clearMapButton = null;
     private JToggleButton fillMapButton = null;
+    private JToggleButton autoSolveMapButton = null;
     private JToggleButton checkMapButton = null;
     private JToggleButton loadPredefinedMap = null;
     int cellWith = 100;
@@ -180,6 +181,7 @@ public class ViewMainFrame extends JFrame {
         unfreezeButton    = addToolButton("UNFREEZE");
 
         fillMapButton   = addToolButton("FILL MAP");
+        autoSolveMapButton = addToolButton("AUTO SOLVE");
         checkMapButton   = addToolButton("CHECK");
         loadPredefinedMap = addToolButton("LOAD MAP");
 
@@ -394,6 +396,16 @@ public class ViewMainFrame extends JFrame {
             } else if(selected == fillMapButton){
                 drawingPanel.fillPossibleValues(chkTrying.isSelected(),cheSimplify.isSelected());
                 repaint();
+                return;
+            } else if(selected == autoSolveMapButton){
+                LOGGER.info("Auto solver started...");
+                if (AutoSolver.solve(drawingPanel.getObjectMap())) {
+                    //drawingPanel.fillPossibleValues(chkTrying.isSelected(),cheSimplify.isSelected());
+                    repaint();
+                    LOGGER.info("Solved");
+                } else {
+                    LOGGER.info("Failed");
+                }
                 return;
             } else if(selected == checkMapButton){
                 drawingPanel.check();

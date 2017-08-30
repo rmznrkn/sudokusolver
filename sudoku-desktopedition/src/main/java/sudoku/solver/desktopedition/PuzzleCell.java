@@ -49,6 +49,10 @@ public class PuzzleCell implements Serializable, ObjectInputValidation {
         oos.writeInt(valueSetByUser);
     }
 
+    public PuzzleCell(PuzzleCell sell) {
+
+    }
+
     public PuzzleCell(){
 
     }
